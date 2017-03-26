@@ -1,34 +1,44 @@
-from TestCase import TestCase
-from WasRun import WasRun
-from TestResult import TestResult
+import xunit
 
-class TestCaseTest(TestCase):
+class TestCaseTest(xunit.TestCase):
 
  def setUp(self):
-  self.test= WasRun("testMethod")
+  self.result= xunit.TestResult()
 
  def testTemplateMethod(self):
-  test= WasRun("testMethod")
-  test.run()
+  test= xunit.WasRun("testMethod")
+  test.run(self.result)
   assert("setUp testMethod tearDown " == test.log)
 
  def testResult(self):
-  test= WasRun("testMethod")
-  result= test.run()
-  assert("1 run, 0 failed" == result.summary())
+  test= xunit.WasRun("testMethod")
+  test.run(self.result)
+  assert("1 run, 0 failed" == self.result.summary())
 
  def testFailedResult(self):
-  test= WasRun("testBrokenMethod")
-  result= test.run()
-  assert("1 run, 1 failed" == result.summary())
+  test= xunit.WasRun("testBrokenMethod")
+  test.run(self.result)
+  assert("1 run, 1 failed" == self.result.summary())
 
  def testFailedResultFormatting(self):
-  result= TestResult()
-  result.testStarted()
-  result.testFailed()
-  assert("1 run, 1 failed" == result.summary())
+  self.result.testStarted()
+  self.result.testFailed()
+  assert("1 run, 1 failed" == self.result.summary())
 
-TestCaseTest("testTemplateMethod").run()
-TestCaseTest("testResult").run()
-TestCaseTest("testFailedResult").run()
-TestCaseTest("testFailedResultFormatting").run()
+ def testSuite(self):
+  suite= xunit.TestSuite()
+  suite.add(xunit.WasRun("testMethod"))
+  suite.add(xunit.WasRun("testBrokenMethod"))
+  result= xunit.TestResult()
+  suite.run(result)
+  assert("2 run, 1 failed" == result.summary())
+
+suite= xunit.TestSuite()
+suite.add(TestCaseTest("testTemplateMethod"))
+suite.add(TestCaseTest("testResult"))
+suite.add(TestCaseTest("testFailedResult"))
+suite.add(TestCaseTest("testFailedResultFormatting"))
+suite.add(TestCaseTest("testSuite"))
+result= xunit.TestResult()
+suite.run(result)
+print result.summary()
